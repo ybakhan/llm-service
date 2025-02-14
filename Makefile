@@ -1,3 +1,5 @@
+export MODELS_DIR := $(shell realpath ./models)
+
 ## run unit test
 .PHONY: unit
 unit:
@@ -31,12 +33,12 @@ run-image:
 ## generate service manifest 
 .PHONY: helm-template
 helm-template:
-	helm template qlik-llm ./helm/qlik-llm-service
+	helm template qlik-llm ./helm/qlik-llm-service --set volumes.modelsVolume.path=$(MODELS_DIR)
 
 ## install service in dev environment
 .PHONY: helm-install-dev
 helm-install-dev:
-	helm install qlik-llm ./helm/qlik-llm-service -f ./helm/qlik-llm-service/values/dev-values.yaml
+	helm install qlik-llm ./helm/qlik-llm-service -f ./helm/qlik-llm-service/values/dev-values.yaml --set volumes.modelsVolume.path=$(MODELS_DIR)
 
 ## install service in prod environment
 .PHONY: helm-install-prod
@@ -44,9 +46,9 @@ helm-install-prod:
 	helm install qlik-llm ./helm/qlik-llm-service -f ./helm/qlik-llm-service/values/prod-values.yaml
 
 ## upgrade service in dev environment
-.PHONY: helm-upgrade-dev
+.PHONY: helm-upgrade-dev 
 helm-upgrade-dev:
-	helm upgrade qlik-llm ./helm/qlik-llm-service -f ./helm/qlik-llm-service/values/dev-values.yaml
+	helm upgrade qlik-llm ./helm/qlik-llm-service -f ./helm/qlik-llm-service/values/dev-values.yaml --set volumes.modelsVolume.path=$(MODELS_DIR)
 
 ## upgrade service in prod environment
 .PHONY: helm-upgrade-prod

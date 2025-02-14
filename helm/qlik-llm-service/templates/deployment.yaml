@@ -13,14 +13,14 @@ spec:
         app: {{ .Release.Name }}-service
     spec:
       volumes:
-      - name: llm-model
+      - name: model-volume
         hostPath:
-          path: "/Users/yak/dev/llm/models"
+          path: {{ .Values.volumes.modelsVolume.path }}
       containers:
       - name: {{ .Release.Name }}-service
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         volumeMounts:
-        - name: llm-model
+        - name: model-volume
           mountPath: /app/models
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
