@@ -20,6 +20,7 @@ config:
   TOP_K: "5"
   TOP_P: "0.7"
   REPETITION_PENALTY: "1.1"
+  MODEL_DIR_NAME: "distilgpt2"
 
 hpa:
   minReplicas: 3

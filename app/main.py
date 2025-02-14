@@ -23,9 +23,10 @@ configured_vars = [
     'TEMPERATURE',
     'TOP_K',
     'TOP_P',
-    'REPETITION_PENALTY'
+    'REPETITION_PENALTY',
+    'MODEL_DIR_NAME'
 ]
-logger.info("LLM service environment variables:")
+logger.info("Qlik LLM service environment variables:")
 for key in configured_vars:
     if key in os.environ:
         logger.info(f"{key}={os.environ[key]}")
@@ -34,9 +35,12 @@ for key in configured_vars:
 #############################################################################
 
 # load the model and tokenizer
-model_name = "./models/distilgpt2"
-model = AutoModelForCausalLM.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+model_dir_name = os.environ.get('MODEL_DIR_NAME', "distilgpt2")
+logger.info(f"loading model from directory : {model_dir_name}")
+
+model_dir_path = f"./models/{model_dir_name}"
+model = AutoModelForCausalLM.from_pretrained(model_dir_path)
+tokenizer = AutoTokenizer.from_pretrained(model_dir_path)
 
 # Set pad_token for the tokenizer and model
 tokenizer.pad_token = tokenizer.eos_token
