@@ -31,11 +31,11 @@ def generate_text(prompt: str, tokenizer, model):
             attention_mask = attention_mask,
             do_sample = True,
             num_return_sequences = 1,  
-            max_new_tokens = int(os.environ.get('MAX_NEW_TOKENS', 30)),               
+            max_new_tokens = int(os.environ.get('MAX_NEW_TOKENS', 50)),               
             temperature = float(os.environ.get('TEMPERATURE', 0.3)),                
             top_k = int(os.environ.get('TOP_K', 20)),                       
             top_p = float(os.environ.get('TOP_P', 0.9)),                      
-            repetition_penalty = float(os.environ.get('REPETITION_PENALTY', 1.1))
+            repetition_penalty = float(os.environ.get('REPETITION_PENALTY', 1.2))
         )
 
     # Decode the generated text
