@@ -4,7 +4,7 @@ import random
 
 # Define our test cases
 test_cases = [
-    {"prompt": "Once upon a time, in galaxy far away "},
+    {"prompt": "Once upon a time, in a galaxy far away "},
     {"prompt": "Roses are red, violets are "},
     {"prompt": "Breaking News: Scientists discover "},
     {"prompt": "Thank you for contacting customer support. How can I assist you with your "},
@@ -22,32 +22,40 @@ class GenerateApiLoadTest(HttpUser):
 
     @task
     def generate_text(self):
-        # Cycle through our test cases
-        # Randomly choose a test case to avoid sequential bias in multi-user scenarios
+        # randomly choose a test case to avoid bias in multi-user scenarios
         case = random.choice(test_cases)
         start_time = time.time()
-        
+
         try:
             response = self.client.post("/generate", json=case, name="/generate")
-            response_time = time.time() - start_time
-            self.environment.events.request_success.fire(
-                request_type="POST",
-                name="/generate",
-                response_time=response_time * 1000,  # Convert to milliseconds
-                response_length=len(response.content)
-            )
-            print(f"Successful response for input: {case}. Time: {response_time:.2f}s")
+            response_time = (time.time() - start_time) * 1000  # convert to milliseconds
+
+            if response.status_code == 200:
+                self.environment.events.request.fire(
+                    request_type = "POST",
+                    name = "/generate",
+                    response_time = response_time,
+                    response_length = len(response.content),
+                    context = {"status_code": response.status_code}
+                )
+                print(f"Successful response for input: {case['prompt']}. Time: {response_time:.2f}ms")
+            else:
+                self.environment.events.request.fire(
+                    request_type = "POST",
+                    name = "/generate",
+                    response_time = response_time,
+                    response_length = len(response.content),
+                    exception = Exception(f"Non-200 status code: {response.status_code}"),
+                    context = {"status_code": response.status_code}
+                )
+                print(f"Failed response for input: {case['prompt']}. Status code: {response.status_code}")
+
         except Exception as e:
-            response_time = time.time() - start_time
-            self.environment.events.request_failure.fire(
-                request_type="POST",
-                name="/generate",
-                response_time=response_time * 1000,  # Convert to milliseconds
-                exception=str(e)
+            response_time = (time.time() - start_time) * 1000  # convert to milliseconds
+            self.environment.events.request.fire(
+                request_type = "POST",
+                name = "/generate",
+                response_time = response_time,
+                exception = e
             )
-            print(f"Error for input: {case}. Time: {response_time:.2f}s. Error: {str(e)}")
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.task_index = 0  # Keep track of which test case we're on
-
+            print(f"Error for input: {case['prompt']}. Time: {response_time:.2f}ms. Error: {str(e)}")
