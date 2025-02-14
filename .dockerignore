@@ -1,0 +1,10 @@
+__pycache__/
+.pytest_cache/
+.vs_code/
+app/__pycache__/
+deploy/
+models/
+tests/
+venv/
+.gitignore
+Dockerfile
