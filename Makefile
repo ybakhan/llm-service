@@ -1,5 +1,15 @@
 export MODELS_DIR := $(shell realpath ./models)
 
+## download gpt2 LLM from https://huggingface.co/
+.PHONY: download-model-gpt2
+download-model-gpt2: 
+	python ./scripts/model_download.py --model-name openai-community/gpt2
+
+## download distilgpt2 LLM from https://huggingface.co/
+.PHONY: download-model-distilgpt2
+download-model-distilgpt2: 
+	python ./scripts/model_download.py --model-name distilbert/distilgpt2
+
 ## run unit test
 .PHONY: unit
 unit:
