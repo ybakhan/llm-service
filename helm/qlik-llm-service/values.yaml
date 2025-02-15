@@ -1,14 +1,14 @@
 replicaCount: 1
 
 image:
-  repository: llm
+  repository: qlik-llm-service
   tag: latest
   pullPolicy: IfNotPresent
 
 resources:
   requests:
     cpu: "1"
-    memory: "512Mi"
+    memory: "512Mi"   # a Fast API worker node can comfortably load a distilGPT2 model
   limits:
     cpu: "1"
     memory: "1024Mi"

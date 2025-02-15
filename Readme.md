@@ -11,7 +11,7 @@ A text generation service based on language models from https://huggingface.co/
 
 If you don't use kubernetes on docker desktop, change context of kubectl to docker-desktop
 
-```
+```bash
 kubectl config use-context docker-desktop
 ```
 
@@ -19,7 +19,7 @@ kubectl config use-context docker-desktop
 
 Start a virtual environment terminal and install project dependencies
 
-```
+```bash
 python3 -m venv myenv
 source myenv/bin/activate  
 pip install pytest locust httpx
@@ -30,7 +30,7 @@ pip install -r requirements.txt
 
 In your virtual environment termina terminal run below command
 
-```
+```bash
 make download-model-distilgpt2
 ```
 
@@ -38,7 +38,7 @@ make download-model-distilgpt2
 
 In your virtual environment termina terminal run below command
 
-```
+```bash
 make unit
 ```
 
@@ -46,7 +46,7 @@ make unit
 
 In your virtual environment termina terminal run below command
 
-```
+```bash
 make integration
 ```
 
@@ -54,7 +54,7 @@ make integration
 
 In your virtual environment termina terminal run below command
 
-```
+```bash
 make test-all
 ```
 
@@ -62,7 +62,7 @@ make test-all
 
 In your virtual environment termina terminal run below command
 
-```
+```bash
 make run-local
 ```
 
@@ -74,7 +74,7 @@ Model and tokenizer successfully loaded from /path/to/directory/of/language/mode
 
 Prompt the /generate api to generate some text
 
-```
+```bash
 curl http://localhost:8000/generate -X POST \
 	-H 'Content-Type: application/json' \
 	-d '{"prompt":"Once upon a time in a land far away "}'
@@ -82,16 +82,20 @@ curl http://localhost:8000/generate -X POST \
 
 The output should include generated text and response time
 
-```
+```json
 {
   "generated_text": "Once upon a time in a land far away The Lord of the Rings: The Fellowship, I was told that my father had been killed by an evil wizard.\nI remember seeing him as he looked down on me and said to myself “What are you doing?” He asked if",
   "response_time": 2.16
 }
 ```
 
+### Access API docs
+
+Browse to http://localhost:8000/docs
+
 ## Build service as docker image
 
-```
+```bash
 make image
 ```
 
@@ -99,7 +103,7 @@ The image is tagged qlik-llm-service:latest
 
 ## Run service as docker container
 
-```
+```bash
 make run-image
 ```
 
@@ -107,13 +111,13 @@ The container name is qlik-llm-service
 
 ## Run service on kubernetes
 
-```
+```bash
 make helm-install-dev
 ```
 
-Should see output
+The status of the service should be deployed
 
-```
+```bash
 NAME: qlik-llm
 LAST DEPLOYED: Fri Feb 14 19:13:02 2025
 NAMESPACE: default
@@ -124,7 +128,7 @@ TEST SUITE: None
 
 Too inspect all kubernetes resources created by the helm package
 
-```
+```bash
 kubectl get all -l app=qlik-llm-service
 ```
 
@@ -155,7 +159,7 @@ The service is exposed on port 30000
 
 Prompt the /generate api on port 30000 to generate some text
 
-```
+```bash
 curl http://localhost:30000/generate -X POST \
 	-H 'Content-Type: application/json' \
 	-d '{"prompt":"Once upon a time in a land far away "}'
@@ -165,27 +169,47 @@ curl http://localhost:30000/generate -X POST \
 
 In your venv terminal run below command
 
-```
+```bash
 make load-test
 ```
 
 Browse to http://0.0.0.0:8089
 
-Start a load test with 50 concurrent users for 5 minutes.
+Start a load test with 100 concurrent users for 5 minutes. 
+Your docker desktop must be allocated 6 CPU and 6 GB memory for such setup.
+If not, test with lower concurrent users.
 
-Run below command to find the service automatically scales to 5 pods 
+Run below command to find the service automatically scales out to 5 pods 
 
-```
+```bash
 kubectl get pods -l app=qlik-llm-service
 ```
 
-If the service doesn't scale immediately restart the load-test with higher number of concurrent users. 
+If the service doesn't scale out immediately restart the load-test with higher number of concurrent users. 
 
 You may check the logs of each pod to ensure the service is load balancing as expected
 
-```
+```bash
 kubectl logs -f qlik-llm-service-<pod_id>
 ```
+
+Check the resource consumption of service pods 
+
+```bash
+kubectl top pods -l app=qlik-llm-service
+```
+
+Notice resource consumption reaches peak capacity for 100 concurrent users.
+
+```
+qlik-llm-service-568746bb8c-7f2cm   868m         772Mi
+qlik-llm-service-568746bb8c-g46hl   885m         877Mi
+qlik-llm-service-568746bb8c-jmgfs   855m         826Mi
+qlik-llm-service-568746bb8c-lrqh7   874m         879Mi
+qlik-llm-service-568746bb8c-xbwrt   882m         878Mi
+```
+
+The service should scale in back to 3 pods after the load test completes
 
 ## Service configuration on kubernetes
 
@@ -202,13 +226,27 @@ They allow configuring
 
 The dev environment service configuration parameters are defined in ./helm/qlik-llm-service/values/dev-values.yaml
 
+For e.g to change the language model used by the service to gpt.
+First download the language model to models directory in the project root.
+
+```bash
+make download-model-gpt2
+```
+
+In dev-values.yaml set MODEL_DIR_NAME tp gpt2
+
+```yaml
+config:
+  MODEL_DIR_NAME: "gpt2"
+```
+
 The prod environment service configuration parameters are defined in ./helm/qlik-llm-service/values/prod-values.yaml
 
 ### Update service configuration on kubernetes
 
-To update configuration of an existing service in dev environment
+To apply service configuration changes in dev environment
 
-```
+```bash
 make helm-upgrade-dev
 ```
 
@@ -224,9 +262,15 @@ REVISION: 2
 TEST SUITE: None
 ```
 
+To apply configuration changes in prod environment
+
+```bash
+make helm-upgrade-prod
+```
+
 ### Check status of service on kubernetes
 
-```
+```bash
 make helm-status
 ```
 
@@ -234,6 +278,6 @@ make helm-status
 
 To stop the service and release all resource
 
-```
+```bash
 make helm-delete
 ```

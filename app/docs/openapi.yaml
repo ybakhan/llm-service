@@ -1,0 +1,88 @@
+openapi: 3.0.0
+info:
+  title: LLM Text Generation Service
+  version: 1.0.0
+  description: API for generating text using a Large Language Model (LLM)
+  contact:
+    email: ybakhan@gmail.com
+    name: Yasser Khan
+servers:
+  - description: Local
+    url: 'http://localhost:8000'
+tags:
+  - name: Text Generation
+    description: Operations related to text generation
+paths:
+  /generate:
+    post:
+      summary: Generate text based on a given prompt
+      description: |
+        Accepts a prompt in the request payload and returns generated text along with the response time.
+      operationId: generateText
+      tags: 
+        - Text Generation
+      requestBody:
+        description: JSON payload containing the prompt for text generation
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateRequest'
+            example:
+              prompt: "Once upon a time "
+      responses:
+        '200':
+          description: Successful response with generated text and response time
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationResponse'
+              example:
+                generated_text: "in a kingdom far away..."
+                response_time: 0.5
+        '400':
+          description: Bad Request - Missing prompt or invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateErrorResponse'
+              example:
+                detail: "No prompt provided in payload"
+        '500':
+          description: Internal Server Error - An error occurred during text generation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateErrorResponse'
+              example:
+                detail: "Model generation failed: Could not process the prompt"
+components:
+  schemas:
+    GenerateRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+          description: The prompt for text generation
+      required:
+        - prompt
+    GenerationResponse:
+      type: object
+      properties:
+        generatedText:
+          type: string
+          description: The generated text based on the prompt
+        responseTime:
+          type: number
+          description: Time taken to generate the response in seconds
+      required:
+        - generatedText
+        - responseTime
+    GenerateErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Description of the error
+      required:
+        - detail

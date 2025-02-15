@@ -1,14 +1,14 @@
 from fastapi import FastAPI, HTTPException, Response
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from fastapi.openapi.utils import get_openapi
+from fastapi.openapi.docs import get_swagger_ui_html
+from pathlib import Path
 from generate import generate_text
 import time 
-import yaml
 import os
 import uvicorn    
 import logging
 
-app = FastAPI()
+app = FastAPI(openapi_url=None)
 
 logging.basicConfig(
     level=logging.INFO, 
@@ -98,16 +98,20 @@ async def generate_handler(payload: dict):
     finally:
         logger.info(f"Total request time: {time.time() - start_time:.2f} seconds")
 
-@app.get("/openapi.yaml", response_class=Response)
-async def get_openapi_yaml():
-    openapi_schema = get_openapi(
-        title="Text Generation API",
-        version="1.0.0",
-        description="This API generates text based on given prompts using a pre-trained model.",
-        routes=app.routes
+# Serve openapi documentation UI
+@app.get("/docs", include_in_schema=False)
+async def docs_handler():
+    return get_swagger_ui_html(
+        openapi_url="/openapi.yaml", 
+        title="LLM Service API Documentation"
     )
-    yaml_schema = yaml.dump(openapi_schema)
-    return Response(content=yaml_schema, media_type="application/yaml")
+
+# Serve openapi documentation
+@app.get("/openapi.yaml", include_in_schema=False)
+async def openapi_handler():
+    with open(Path(__file__).parent / "docs/openapi.yaml", "r") as yaml_file:
+        content = yaml_file.read()
+    return Response(content=content, media_type="application/yaml")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
