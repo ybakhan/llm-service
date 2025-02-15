@@ -3,12 +3,43 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from fastapi.openapi.docs import get_swagger_ui_html
 from pathlib import Path
 from generate import generate_text
+from contextlib import asynccontextmanager
 import time 
 import os
 import uvicorn    
 import logging
 
-app = FastAPI(openapi_url=None)
+def load_model_and_tokenizer():
+    try:
+        model_dir_name = os.environ.get('MODEL_DIR_NAME', "distilgpt2")
+        model_dir_path = os.path.abspath(os.path.join("./models", model_dir_name))
+
+        # load model and tokenizer
+        model = AutoModelForCausalLM.from_pretrained(model_dir_path)
+        tokenizer = AutoTokenizer.from_pretrained(model_dir_path)
+
+        # set pad_token for the tokenizer and model
+        tokenizer.pad_token = tokenizer.eos_token
+        model.config.pad_token_id = model.config.eos_token_id
+
+        logger.info(f"Model and tokenizer successfully loaded from {model_dir_path}")
+        return model, tokenizer
+
+    except Exception as e:
+        logger.error(f"Failed to load model or tokenizer from {model_dir_path}. Error: {str(e)}")
+        raise SystemExit("Model loading process failed. Exiting application.") from e
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # load model and tokenizer
+    global model, tokenizer
+    model, tokenizer = load_model_and_tokenizer()
+    yield
+    # shutdown - clean up model and tokenizer
+    del model, tokenizer
+    logger.info("Model and tokenizer have been cleaned up.")
+
+app = FastAPI(openapi_url=None, lifespan=lifespan)
 
 logging.basicConfig(
     level=logging.INFO, 
@@ -33,28 +64,6 @@ for key in configured_vars:
     else:
         logger.info(f"{key} is not set")
 #############################################################################
-
-def load_model_and_tokenizer():
-    try:
-        model_dir_name = os.environ.get('MODEL_DIR_NAME', "distilgpt2")
-        model_dir_path = os.path.abspath(os.path.join("./models", model_dir_name))
-
-        # load model and tokenizer
-        model = AutoModelForCausalLM.from_pretrained(model_dir_path)
-        tokenizer = AutoTokenizer.from_pretrained(model_dir_path)
-
-        # set pad_token for the tokenizer and model
-        tokenizer.pad_token = tokenizer.eos_token
-        model.config.pad_token_id = model.config.eos_token_id
-
-        logger.info(f"Model and tokenizer successfully loaded from {model_dir_path}")
-        return model, tokenizer
-
-    except Exception as e:
-        logger.error(f"Failed to load model or tokenizer from {model_dir_path}. Error: {str(e)}")
-        raise SystemExit("Model loading process failed. Exiting application.") from e
-
-model, tokenizer = load_model_and_tokenizer()
 
 @app.post("/generate")
 async def generate_handler(payload: dict):
