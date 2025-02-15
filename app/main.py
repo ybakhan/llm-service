@@ -34,17 +34,27 @@ for key in configured_vars:
         logger.info(f"{key} is not set")
 #############################################################################
 
-# load the model and tokenizer
-model_dir_name = os.environ.get('MODEL_DIR_NAME', "distilgpt2")
-logger.info(f"loading model from directory : {model_dir_name}")
+def load_model_and_tokenizer():
+    try:
+        model_dir_name = os.environ.get('MODEL_DIR_NAME', "distilgpt2")
+        model_dir_path = os.path.abspath(os.path.join("./models", model_dir_name))
 
-model_dir_path = f"./models/{model_dir_name}"
-model = AutoModelForCausalLM.from_pretrained(model_dir_path)
-tokenizer = AutoTokenizer.from_pretrained(model_dir_path)
+        # load model and tokenizer
+        model = AutoModelForCausalLM.from_pretrained(model_dir_path)
+        tokenizer = AutoTokenizer.from_pretrained(model_dir_path)
 
-# Set pad_token for the tokenizer and model
-tokenizer.pad_token = tokenizer.eos_token
-model.config.pad_token_id = model.config.eos_token_id
+        # set pad_token for the tokenizer and model
+        tokenizer.pad_token = tokenizer.eos_token
+        model.config.pad_token_id = model.config.eos_token_id
+
+        logger.info(f"Model and tokenizer successfully loaded from {model_dir_path}")
+        return model, tokenizer
+
+    except Exception as e:
+        logger.error(f"Failed to load model or tokenizer from {model_dir_path}. Error: {str(e)}")
+        raise SystemExit("Model loading process failed. Exiting application.") from e
+
+model, tokenizer = load_model_and_tokenizer()
 
 @app.post("/generate")
 async def generate_handler(payload: dict):

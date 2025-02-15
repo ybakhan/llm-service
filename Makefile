@@ -20,20 +20,20 @@ unit:
 integration:
 	PYTHONPATH=./app pytest tests/integration
 
-## run load test
-.PHONY: load-test
-load-test:
-	locust -f ./tests/load/test_generate_api.py --host http://localhost:30000
-
-## build docker image
-.PHONY: image
-image:
-	docker build . -t qlik-llm-service:latest
+## run unit test and integration tests
+.PHONY: test-all
+test-all:
+	PYTHONPATH=./app pytest tests/unit tests/integration
 
 ## run service
 .PHONY: run-local
 run-local:
 	python ./app/main.py
+
+## build docker image
+.PHONY: image
+image:
+	docker build . -t qlik-llm-service:latest
 
 ## run service image
 .PHONY: run-image
@@ -74,3 +74,8 @@ helm-delete:
 .PHONY: helm-status
 helm-status:
 	helm status qlik-llm
+
+## run load test
+.PHONY: load-test
+load-test:
+	locust -f ./tests/load/test_generate_api.py --host http://localhost:30000
