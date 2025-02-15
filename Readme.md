@@ -4,18 +4,20 @@ A text generation service based on language models from https://huggingface.co/
 
 ## Prerequisites
 
-- Python Python 3.13.2+
+- Python Python 3.13+
 - Docker Desktop with Kubernetes enabled
 - Helm
 - kubectl
 
-If you don't use kubernetes on docker desktop, change context to kubectl to docker-desktop
+If you don't use kubernetes on docker desktop, change context of kubectl to docker-desktop
 
 ```
 kubectl config use-context docker-desktop
 ```
 
 ## Setup virtual environment
+
+Start a virtual environment terminal and install project dependencies
 
 ```
 python3 -m venv myenv
@@ -26,7 +28,7 @@ pip install -r requirements.txt
 
 ## Download language models
 
-In your venv terminal run below command
+In your virtual environment termina terminal run below command
 
 ```
 make download-model-distilgpt2
@@ -34,7 +36,7 @@ make download-model-distilgpt2
 
 ## Run unit tests
 
-In your venv terminal run below command
+In your virtual environment termina terminal run below command
 
 ```
 make unit
@@ -42,7 +44,7 @@ make unit
 
 ## Run integration tests
 
-In your venv terminal run below command
+In your virtual environment termina terminal run below command
 
 ```
 make integration
@@ -50,7 +52,7 @@ make integration
 
 ## Run all tests
 
-In your venv terminal run below command
+In your virtual environment termina terminal run below command
 
 ```
 make test-all
@@ -58,7 +60,7 @@ make test-all
 
 ## Run service locally
 
-In your venv terminal run below command
+In your virtual environment termina terminal run below command
 
 ```
 make run-local
@@ -179,21 +181,59 @@ kubectl get pods -l app=qlik-llm-service
 
 If the service doesn't scale immediately restart the load-test with higher number of concurrent users. 
 
-Sample output of load test
-
-```
-Successful response for input: According to the new amendment, the rights of the accused include . Time: 24295.14ms
-Successful response for input: In the year 1789, during the French Revolution, . Time: 28058.04ms
-Successful response for input: Once upon a time, in a galaxy far away . Time: 43286.28ms
-Successful response for input: In a world where magic is forbidden, a young wizard must . Time: 24703.93ms
-Successful response for input: As a grumpy old man, I would say . Time: 29933.46ms
-Successful response for input: Once upon a time, in a galaxy far away . Time: 45944.39ms
-Successful response for input: Thank you for contacting customer support. How can I assist you with your . Time: 23491.65ms
-```
-
 You may check the logs of each pod to ensure the service is load balancing as expected
 
 ```
 kubectl logs -f qlik-llm-service-<pod_id>
 ```
 
+## Service configuration on kubernetes
+
+The default service configuration parameters are defined in ./helm/qlik-llm-service/values.yaml
+
+They allow configuring 
+- service image version
+- cpu and memory allocation of service pods
+- language model parameters - max length, max new tokens, temperature, top_k, top_p, repetition_penalty
+- source directory of laguage models
+- directory name of language model
+- pod auto scaling
+- service port
+
+The dev environment service configuration parameters are defined in ./helm/qlik-llm-service/values/dev-values.yaml
+
+The prod environment service configuration parameters are defined in ./helm/qlik-llm-service/values/prod-values.yaml
+
+### Update service configuration on kubernetes
+
+To update configuration of an existing service in dev environment
+
+```
+make helm-upgrade-dev
+```
+
+Note the revision of the service has incremented
+
+```
+Release "qlik-llm" has been upgraded. Happy Helming!
+NAME: qlik-llm
+LAST DEPLOYED: Fri Feb 14 20:20:02 2025
+NAMESPACE: default
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+```
+
+### Check status of service on kubernetes
+
+```
+make helm-status
+```
+
+## Stop service on kubernetes
+
+To stop the service and release all resource
+
+```
+make helm-delete
+```

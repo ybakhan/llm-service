@@ -1,12 +1,14 @@
 __pycache__/
 .pytest_cache/
 .vs_code/
+helm/
 app/__pycache__/
-deploy/
 models/
+myenv/
+scripts/
 tests/
-venv/
 .gitignore
 Dockerfile
+LICENSE
 Makefile
-scripts/
+Readme.md
