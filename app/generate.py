@@ -1,25 +1,16 @@
 import os
 import torch
 
-def generate_text(prompt: str, tokenizer, model):
-    """
-    Generate text based on the provided prompt.
+def generate_text(prompt: str, tokenizer, model, device):
     
-    Args:
-    prompt (str): The input text to generate from.
-
-    Returns:
-    str: The generated text.
-
-    Raises:
-    RuntimeError: If there's an error in model generation.
-    """
-    # Encode the prompt with padding and attention mask
     inputs = tokenizer(prompt, 
         return_tensors="pt", 
-        padding="max_length", 
+        padding=False,
         truncation=True, 
         max_length=int(os.environ.get('MAX_LENGTH', 512)))
+    
+    # move tensors to device
+    inputs = {k: v.to(device) for k, v in inputs.items()}
     
     input_ids = inputs['input_ids']
     attention_mask = inputs['attention_mask']

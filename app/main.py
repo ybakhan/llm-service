@@ -8,6 +8,7 @@ import time
 import os
 import uvicorn    
 import logging
+import torch
 
 def load_model_and_tokenizer():
     try:
@@ -19,12 +20,21 @@ def load_model_and_tokenizer():
         model = AutoModelForCausalLM.from_pretrained(model_dir_path)
         tokenizer = AutoTokenizer.from_pretrained(model_dir_path)
 
+        device = None  
+        if torch.backends.mps.is_available():
+            device = torch.device("mps") 
+            
+            # Move model to device with half-precision if MPS is available
+            model = model.to(dtype=torch.float16, device=device)
+        else:
+            device = "cpu"
+                
         # set pad_token for the tokenizer and model
         tokenizer.pad_token = tokenizer.eos_token
         model.config.pad_token_id = model.config.eos_token_id
 
-        logger.info(f"Model and tokenizer successfully loaded from {model_dir_path}")
-        return model, tokenizer
+        logger.info(f"Model and tokenizer successfully loaded from {model_dir_path} on device {device}")
+        return model, tokenizer, device
 
     except Exception as e:
         logger.error(f"Failed to load model or tokenizer from {model_dir_path}. Error: {str(e)}")
@@ -33,10 +43,11 @@ def load_model_and_tokenizer():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # load model and tokenizer
-    model, tokenizer = load_model_and_tokenizer()
+    model, tokenizer, device = load_model_and_tokenizer()
     
     app.state.model = model
     app.state.tokenizer = tokenizer
+    app.state.device = device
     
     yield
     # shutdown - clean up model and tokenizer
@@ -82,9 +93,7 @@ async def generate_handler(payload: dict):
     logger.info(f"Prompt extracted: {prompt}")
                 
     try:
-        model = app.state.model
-        tokenizer = app.state.tokenizer
-        generated_text = generate_text(prompt, tokenizer, model)
+        generated_text = generate_text(prompt, app.state.tokenizer, app.state.model, app.state.device)
         
         response_time = round(time.time() - start_time, 2)
         

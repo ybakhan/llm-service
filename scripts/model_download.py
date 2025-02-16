@@ -13,6 +13,7 @@ def main():
     args = parser.parse_args()
     model_name = args.model_name
 
+    model, tokenizer = None, None
     try:
         # load tokenizer and model
         tokenizer = AutoTokenizer.from_pretrained(model_name)

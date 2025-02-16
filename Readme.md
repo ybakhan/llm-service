@@ -68,7 +68,7 @@ make run-local
 See below log line to ensure language model is loaded
 
 ```
-Model and tokenizer successfully loaded from /path/to/directory/of/language/model
+Model and tokenizer successfully loaded from /path/to/directory/of/language/model on device cpu
 ```
 
 Prompt the /generate api to generate some text
