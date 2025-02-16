@@ -11,8 +11,9 @@ import logging
 
 def load_model_and_tokenizer():
     try:
-        model_dir_name = os.environ.get('MODEL_DIR_NAME', "distilgpt2")
-        model_dir_path = os.path.abspath(os.path.join("./models", model_dir_name))
+        model_dir_path = os.environ.get(
+            'MODEL_DIR_PATH',   # used to run service natively on host
+            os.path.abspath("./model"))
 
         # load model and tokenizer
         model = AutoModelForCausalLM.from_pretrained(model_dir_path)
@@ -30,10 +31,13 @@ def load_model_and_tokenizer():
         raise SystemExit("Model loading process failed. Exiting application.") from e
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(app: FastAPI):
     # load model and tokenizer
-    global model, tokenizer
     model, tokenizer = load_model_and_tokenizer()
+    
+    app.state.model = model
+    app.state.tokenizer = tokenizer
+    
     yield
     # shutdown - clean up model and tokenizer
     del model, tokenizer
@@ -54,8 +58,7 @@ configured_vars = [
     'TEMPERATURE',
     'TOP_K',
     'TOP_P',
-    'REPETITION_PENALTY',
-    'MODEL_DIR_NAME'
+    'REPETITION_PENALTY'
 ]
 logger.info("Qlik LLM service environment variables:")
 for key in configured_vars:
@@ -79,6 +82,8 @@ async def generate_handler(payload: dict):
     logger.info(f"Prompt extracted: {prompt}")
                 
     try:
+        model = app.state.model
+        tokenizer = app.state.tokenizer
         generated_text = generate_text(prompt, tokenizer, model)
         
         response_time = round(time.time() - start_time, 2)

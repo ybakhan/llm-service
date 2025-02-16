@@ -1,4 +1,4 @@
-export MODELS_DIR := $(shell realpath ./models)
+export MODEL_DIR_PATH := $(shell realpath ./models/distilgpt2)
 
 ## download gpt2 LLM from https://huggingface.co/
 .PHONY: download-model-gpt2
@@ -38,17 +38,17 @@ image:
 ## run service image
 .PHONY: run-image
 run-image:
-	docker run --rm -it  -p 8000:8000 -v "./models:/app/models" --name qlik-llm-service qlik-llm-service:latest
+	docker run --rm -it  -p 8000:8000 -v "./models/distilgpt2:/app/model" --name qlik-llm-service qlik-llm-service:latest
 
 ## generate service manifest 
 .PHONY: helm-template
 helm-template:
-	helm template qlik-llm ./helm/qlik-llm-service --set volumes.modelsVolume.path=$(MODELS_DIR)
+	helm template qlik-llm ./helm/qlik-llm-service --set volumes.modelVolume.path=$(MODEL_DIR_PATH)
 
 ## install service in dev environment
 .PHONY: helm-install-dev
 helm-install-dev:
-	helm install qlik-llm ./helm/qlik-llm-service -f ./helm/qlik-llm-service/values/dev-values.yaml --set volumes.modelsVolume.path=$(MODELS_DIR)
+	helm install qlik-llm ./helm/qlik-llm-service -f ./helm/qlik-llm-service/values/dev-values.yaml --set volumes.modelVolume.path=$(MODEL_DIR_PATH)
 
 ## install service in prod environment
 .PHONY: helm-install-prod
@@ -58,7 +58,7 @@ helm-install-prod:
 ## upgrade service in dev environment
 .PHONY: helm-upgrade-dev 
 helm-upgrade-dev:
-	helm upgrade qlik-llm ./helm/qlik-llm-service -f ./helm/qlik-llm-service/values/dev-values.yaml --set volumes.modelsVolume.path=$(MODELS_DIR)
+	helm upgrade qlik-llm ./helm/qlik-llm-service -f ./helm/qlik-llm-service/values/dev-values.yaml --set volumes.modelVolume.path=$(MODEL_DIR_PATH)
 
 ## upgrade service in prod environment
 .PHONY: helm-upgrade-prod

@@ -17,13 +17,13 @@ spec:
       volumes:
       - name: model-volume
         hostPath:
-          path: {{ .Values.volumes.modelsVolume.path }}
+          path: {{ .Values.volumes.modelVolume.path }}
       containers:
       - name: {{ .Release.Name }}-service
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         volumeMounts:
         - name: model-volume
-          mountPath: /app/models
+          mountPath: /app/model
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.targetPort }}

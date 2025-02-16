@@ -2,14 +2,29 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 from main import app
-#import asyncio
 
 client = TestClient(app)
-
+    
+@pytest.fixture(autouse=True)
+def mock_model_and_tokenizer():
+    mock_model = MagicMock()
+    mock_tokenizer = MagicMock()
+    
+    # Set the mock model and tokenizer in app.state
+    app.state.model = mock_model
+    app.state.tokenizer = mock_tokenizer
+    
+    yield mock_model, mock_tokenizer
+    
+    # Clean up after the test
+    del app.state.model
+    del app.state.tokenizer
+    
 @pytest.mark.asyncio
-async def test_generate_handler_valid_payload():
+async def test_generate_handler_valid_payload(mock_model_and_tokenizer):
     expected_response = "generated text"
     mock_generate_text = MagicMock(return_value = expected_response)
+    mock_model, mock_tokenizer = mock_model_and_tokenizer
     
     # Mocking logger for cleaner test output
     with patch('main.logger') as mock_logger:
@@ -29,6 +44,9 @@ async def test_generate_handler_valid_payload():
             mock_logger.info.assert_any_call(f"Prompt extracted: {payload['prompt']}")
             mock_logger.info.assert_any_call(f"Response: {result['generated_text']}")
             
+            # verify `generate_text` was called with correct arguments
+            mock_generate_text.assert_called_once_with("test prompt", mock_tokenizer, mock_model)
+        
 @pytest.mark.asyncio
 async def test_generate_handler_no_prompt():
     expected_response = "No prompt provided in payload"

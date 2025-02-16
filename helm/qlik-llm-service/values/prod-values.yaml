@@ -5,8 +5,7 @@ config:
   TOP_K: "20"
   TOP_P: "0.9"
   REPETITION_PENALTY: "1.2"
-  MODEL_DIR_NAME: "gpt2"
 
 volumes:
-  modelsVolume:
-    path: /set/to/directory/of/llm/models/in/production
+  modelVolume:
+    path: /set/to/directory/of/llm/model/in/production

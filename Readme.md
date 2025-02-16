@@ -22,13 +22,12 @@ Start a virtual environment terminal and install project dependencies
 ```bash
 python3 -m venv myenv
 source myenv/bin/activate  
-pip install pytest locust httpx
-pip install -r requirements.txt
+pip install pytest locust httpx pytest-asyncio -r requirements.txt
 ```
 
 ## Download language models
 
-In your virtual environment termina terminal run below command
+In your virtual environment terminal run below command
 
 ```bash
 make download-model-distilgpt2
@@ -36,7 +35,7 @@ make download-model-distilgpt2
 
 ## Run unit tests
 
-In your virtual environment termina terminal run below command
+In your virtual environment terminal run below command
 
 ```bash
 make unit
@@ -44,7 +43,7 @@ make unit
 
 ## Run integration tests
 
-In your virtual environment termina terminal run below command
+In your virtual environment terminal run below command
 
 ```bash
 make integration
@@ -52,7 +51,7 @@ make integration
 
 ## Run all tests
 
-In your virtual environment termina terminal run below command
+In your virtual environment terminal run below command
 
 ```bash
 make test-all
@@ -60,7 +59,7 @@ make test-all
 
 ## Run service locally
 
-In your virtual environment termina terminal run below command
+In your virtual environment terminal run below command
 
 ```bash
 make run-local
@@ -219,8 +218,7 @@ They allow configuring
 - service image version
 - cpu and memory allocation of service pods
 - language model parameters - max length, max new tokens, temperature, top_k, top_p, repetition_penalty
-- source directory of laguage models
-- directory name of language model
+- directory path of of laguage model
 - pod auto scaling
 - service port
 
@@ -233,11 +231,12 @@ First download the language model to models directory in the project root.
 make download-model-gpt2
 ```
 
-In dev-values.yaml set MODEL_DIR_NAME tp gpt2
+In dev-values.yaml set path of gpt2 model
 
 ```yaml
-config:
-  MODEL_DIR_NAME: "gpt2"
+volumes:
+  modelVolume:
+    path: /set/to/directory/of/gpt2/model/in/dev
 ```
 
 The prod environment service configuration parameters are defined in ./helm/qlik-llm-service/values/prod-values.yaml
