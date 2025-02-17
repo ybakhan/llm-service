@@ -27,9 +27,8 @@ async def test_generate_handler_valid_payload(mock_model_and_tokenizer):
     mock_generate_text = MagicMock(return_value = expected_response)
     mock_model, mock_tokenizer, mock_device = mock_model_and_tokenizer
     
-    # Mocking logger for cleaner test output
-    with patch('main.logger') as mock_logger:
-        with patch('main.generate_text', new=mock_generate_text):
+    with patch('api.logger') as mock_logger:
+        with patch('api.generate_text', new=mock_generate_text):
             payload = {"prompt": "test prompt"}
             response = client.post("/generate", json=payload)
             assert response.status_code == 200
@@ -51,7 +50,7 @@ async def test_generate_handler_valid_payload(mock_model_and_tokenizer):
 @pytest.mark.asyncio
 async def test_generate_handler_no_prompt():
     expected_response = "No prompt provided in payload"
-    with patch('main.logger') as mock_logger:
+    with patch('api.logger') as mock_logger:
         payload = {}
         response = client.post("/generate", json=payload)
         
@@ -69,8 +68,8 @@ async def test_generate_handler_value_error(mock_model_and_tokenizer):
     mock_generate_text = MagicMock(side_effect=ValueError(expected_error))
     mock_model, mock_tokenizer, mock_device = mock_model_and_tokenizer
     
-    with patch('main.logger') as mock_logger:
-        with patch('main.generate_text', new=mock_generate_text):
+    with patch('api.logger') as mock_logger:
+        with patch('api.generate_text', new=mock_generate_text):
             payload = {"prompt": "test prompt"}
             response = client.post("/generate", json=payload)
             
@@ -91,8 +90,8 @@ async def test_generate_handler_runtime_error(mock_model_and_tokenizer):
     mock_generate_text = MagicMock(side_effect=RuntimeError(expected_error))
     mock_model, mock_tokenizer, mock_device = mock_model_and_tokenizer
     
-    with patch('main.logger') as mock_logger:
-        with patch('main.generate_text', new=mock_generate_text):
+    with patch('api.logger') as mock_logger:
+        with patch('api.generate_text', new=mock_generate_text):
             payload = {"prompt": "test prompt"}
             response = client.post("/generate", json=payload)
             
@@ -113,8 +112,8 @@ async def test_generate_handler_unexpected_error(mock_model_and_tokenizer):
     mock_generate_text = MagicMock(side_effect=Exception(expected_error))
     mock_model, mock_tokenizer, mock_device = mock_model_and_tokenizer
     
-    with patch('main.logger') as mock_logger:
-        with patch('main.generate_text', new=mock_generate_text):
+    with patch('api.logger') as mock_logger:
+        with patch('api.generate_text', new=mock_generate_text):
             payload = {"prompt": "test prompt"}
             response = client.post("/generate", json=payload)
             
