@@ -37,3 +37,18 @@ spec:
         envFrom:
         - configMapRef:
             name: {{ .Release.Name }}-config
+        # Health checks
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 3

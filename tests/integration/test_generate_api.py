@@ -24,3 +24,20 @@ def test_generate_api_no_prompt():
         # expected 400 Bad Request because no prompt was provided
         assert response.status_code == 400
         assert response.json() == {"detail": "No prompt provided in payload"}
+        
+def test_docs_handler():
+    with TestClient(app) as client:
+        response = client.get("/docs")
+        assert response.status_code == 200
+
+def test_openapi_handler():
+    with TestClient(app) as client:
+        response = client.get("/openapi.yaml")
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/yaml"
+
+def test_health_check_healthy():
+    with TestClient(app) as client:
+        response = client.get("/health")
+        assert response.status_code == 200
+        assert response.json() == {"status": "healthy"}
