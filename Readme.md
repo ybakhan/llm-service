@@ -280,3 +280,26 @@ To stop the service and release all resource
 ```bash
 make helm-delete
 ```
+
+## Troubleshooting load test
+
+If pods are restarting check if service health check is failing due to request timeout
+
+```bash
+kubectl get events -o jsonpath='{range .items[*]}{.involvedObject.kind}{"\t"}{.involvedObject.name}{"\t"}{.reason}{"\t"}{.message}{"\n"}{end}' | grep -E 'Probe|Liveness'
+```
+
+```
+Pod	qlik-llm-service-79ff47b6f4-d9n7q	Unhealthy	Liveness probe failed: Get "http://10.1.1.32:8000/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+```
+
+In this case, you may want scale down concurrency of the load test, or allocate more resources to pods, and kubernetes on docker desktop.
+
+For e.g, to allocate maximum 2GB memory to a pod, in dev-values.yaml set
+
+```yaml
+resources:
+  limits:
+    memory: "2Gi"
+```
+
