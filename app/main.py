@@ -38,7 +38,7 @@ configured_vars = [
     'REPETITION_PENALTY'
 ]
 logger = logging.getLogger(__name__)
-logger.info("Qlik LLM service environment variables:")
+logger.info("LLM microservice environment variables:")
 for key in configured_vars:
     if key in os.environ:
         logger.info(f"{key}={os.environ[key]}")

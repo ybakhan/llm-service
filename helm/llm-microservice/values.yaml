@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: qlik-llm-service
+  repository: llm-microservice
   tag: latest
   pullPolicy: IfNotPresent
 
