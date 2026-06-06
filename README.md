@@ -1,4 +1,4 @@
-# LLM Microservice
+# Sovereign LLM
 
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -9,7 +9,7 @@
 [![Locust](https://img.shields.io/badge/Locust-Load%20Testing-4CAF50)](https://locust.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-A production-ready REST API that serves HuggingFace language models for text generation. Designed for containerised deployment on Kubernetes with horizontal pod auto-scaling and full observability through structured logging and an OpenAPI-documented interface.
+A production-ready, self-hosted LLM inference API — own your models, own your compute, own your data. No third-party API dependency, no data leaving your infrastructure. Runs open-source HuggingFace models on your own Kubernetes cluster with horizontal pod auto-scaling and full observability.
 
 ## Architecture
 
@@ -132,7 +132,7 @@ REVISION: 1
 Verify all resources are healthy:
 
 ```bash
-kubectl get all -l app=llm-service
+kubectl get all -l app=sovereign-llm
 ```
 
 You should see 1 deployment, service, replicaset, configmap, HPA, and 3 pods.
@@ -165,13 +165,13 @@ Browse to **http://0.0.0.0:8089**, then start a test with 100 concurrent users f
 Watch the HPA scale out to 5 pods under load:
 
 ```bash
-kubectl get pods -l app=llm-service --watch
+kubectl get pods -l app=sovereign-llm --watch
 ```
 
 Check per-pod resource usage at peak:
 
 ```bash
-kubectl top pods -l app=llm-service
+kubectl top pods -l app=sovereign-llm
 ```
 
 ```
